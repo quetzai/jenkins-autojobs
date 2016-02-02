@@ -33,6 +33,7 @@ scripts = [
     'jenkins-makejobs-git = jenkins_autojobs.git:_main',
     'jenkins-makejobs-svn = jenkins_autojobs.svn:_main',
     'jenkins-makejobs-hg  = jenkins_autojobs.hg:_main',
+    'jenkins-makejobs-noscm  = jenkins_autojobs.noscm:_main',
 ]
 
 kw = {
