@@ -99,7 +99,7 @@ def create_job(ref, template, config, ref_config):
 
     # If el.text is not empty, the template has already had a treeish specified
     # do not erase it
-    if not el.text:
+    if not ref_config['ignore-jobs']:
 	# :todo: jenkins is being very capricious about the branch-spec
 	# el.text = '%s/%s' % (remote, shortref)  # :todo:
 	el.text = shortref

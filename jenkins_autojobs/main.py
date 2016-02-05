@@ -156,6 +156,8 @@ def main(argv, create_job, list_branches, getoptfmt='vdtnr:j:u:p:y:o:UPYO', conf
     job_names = {}
     for branch, branch_config in configs:
         tmpl = templates[branch_config['template']]
+
+        ignore_job(c, branch_config, jenkins)
         job_name = create_job(branch, tmpl, config, branch_config)
         job_names[job_name] = branch_config
 
@@ -173,6 +175,13 @@ def main(argv, create_job, list_branches, getoptfmt='vdtnr:j:u:p:y:o:UPYO', conf
     if config['cleanup']:
         job_names[config['template']] = {}
         cleanup(config, job_names, jenkins)
+
+def ignore_job(config, branch_config, jenkins, verbose=True):
+    filtered_jobs = filter_jobs( jenkins, by_name_regex=config['ignore-jobs-filters']['jobs'])
+    if any(job for job in jenkins.jobs if job.name == config['template'] and job in filtered_jobs):
+        branch_config['ignore-jobs'] = True
+    else:
+        branch_config['ignore-jobs'] = False
 
 #-----------------------------------------------------------------------------
 def cleanup(config, created_job_names, jenkins, verbose=True):
@@ -305,6 +314,7 @@ def get_default_config(config, opts):
     c['scm-password'] = config.get('scm-password', None)
     c['tag-method'] = config.get('tag-method', 'element')
     c['cleanup-filters'] = config.get('cleanup-filters', {})
+    c['ignore-jobs-filters'] = config.get('ignore-jobs-filters', {})
 
     # Default settings for each git ref/branch config.
     c['defaults'] = {
@@ -345,6 +355,10 @@ def get_default_config(config, opts):
     if '-o' in o: c['scm-password'] = o['-o']
     if '-Y' in o: c['scm-username'] = input('SCM User: ')
     if '-O' in o: c['scm-password'] = getpass.getpass('SCM Password: ')
+
+    # Compile ignore-jobs-filters job name regexes.
+    c['ignore-jobs-filters']['jobs']  = c['ignore-jobs-filters'].get('jobs', [])
+    c['ignore-jobs-filters']['jobs'] = [re.compile(i) for i in c['ignore-jobs-filters']['jobs']]
 
     # Compile ignore regexes.
     c.setdefault('ignore', {})
